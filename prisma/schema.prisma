@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//Creating the data tables, using a code first approach
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum actionType{
+  SEARCH
+  ADD_FAVORITE
+  CREATE_PLAYLIST
+  DELETE_PLAYLIST
+  ADD_TRACK
+  DELETE_TRACK
+}
+
+model User{
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  name      String?
+  password  String?
+  role      Role    @default(USER)
+  playlists Playlist[]
+  favorites Favorite[]
+  userActivity UserActivity[]
+}
+
+model Track {
+  id        Int      @id
+  title     String
+  artist    String
+  album     String
+  duration  Int
+  playlists Playlist[]
+  favorites Favorite[]
+}
+
+model Playlist {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  tracks    Track[]
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  trackId   Int
+  track     Track    @relation(fields: [trackId], references: [id])
+}
+
+model UserActivity {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  actionType actionType @default(SEARCH)
+}
